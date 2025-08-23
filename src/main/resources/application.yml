@@ -1,0 +1,82 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: workspace
+  grpc:
+    client:
+      channels:
+        file:
+          address: 'discovery:///file'
+          enableKeepAlive: true
+          keepAliveWithoutCalls: true
+          negotiation-type: plaintext
+          default-load-balancing-policy: round_robin
+  jpa:
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+    open-in-view: false
+    properties:
+      format_sql: true
+      show_sql: true
+      use_sql_comments: true
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${DB_URL:localhost}:26257/habilisadi?serverTimezone=${TIME_ZONE:UTC}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: ${DB_MAX_POOL_SIZE:21}
+      connection-test-query: SELECT 1
+      connection-timeout: 3000
+      validation-timeout: 3000
+      idle-timeout: 600000
+      max-lifetime: 18000
+      schema: workspace
+      health-check-properties:
+        maximumTimeout: 3000
+        validationQuery: SELECT 1
+        validationQueryTimeout: 3000
+      auto-commit: false
+
+  liquibase:
+    change-log: classpath:/db/changelog/changelog-master.yaml
+    enabled: true
+    default-schema: workspace
+
+logging:
+  level:
+    org.hibernate: debug
+    org.liquibase: debug
+  file:
+    path: ./logs
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost}:${EUREKA_PORT:8080}/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: false
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+
+management:
+  server:
+    port: 8081
+  endpoints:
+    web:
+      exposure:
+        include: prometheus, health, metrics
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  metrics:
+    tags:
+      application: "habilisadi_auth"
