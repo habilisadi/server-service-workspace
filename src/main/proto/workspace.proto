@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package com.habilisadi.workspace;
+
+option java_multiple_files = true;
+option java_package = "com.habilisadi.workspace";
+option java_outer_classname = "WorkspaceProto";
+
+service WorkspaceService {
+  rpc leaveWorkspaceRequest (LeaveWorkspaceRequest) returns (LeaveWorkspaceResponse);
+  rpc invitationRequest (InvitationRequest) returns (InvitationResponse);
+  rpc verifyInvitationRequest (VerifyInvitationRequest) returns (VerifyInvitationResponse);
+}
+
+message LeaveWorkspaceRequest {
+  string userPk = 1;
+}
+
+message LeaveWorkspaceResponse {
+  string userPk = 1;
+}
+
+message InvitationRequest {
+  string id = 1;
+  string email = 2;
+  string workspacePk = 3;
+  string workspaceName = 4;
+  string invitationCode = 5;
+  Status status = 7;
+  string expiredAt = 6;
+}
+
+message InvitationResponse {
+  string id = 1;
+  Status status = 2;
+}
+
+message VerifyInvitationRequest {
+  string workspacePk = 1;
+  string email = 2;
+}
+
+message VerifyInvitationResponse {
+  string workspacePk = 1;
+  string email = 2;
+  string userPk = 3;
+  Status status = 4;
+}
+
+enum Status {
+  PENDING = 0;
+  PROCESSING = 1;
+  COMPLETED = 2;
+  FAILED = 3;
+  CANCELLED = 4;
+}

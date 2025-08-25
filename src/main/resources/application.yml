@@ -3,16 +3,8 @@ server:
 
 spring:
   application:
-    name: workspace
-  grpc:
-    client:
-      channels:
-        file:
-          address: 'discovery:///file'
-          enableKeepAlive: true
-          keepAliveWithoutCalls: true
-          negotiation-type: plaintext
-          default-load-balancing-policy: round_robin
+    name: workspace, redis, grpc
+
   jpa:
     hibernate:
       ddl-auto: none

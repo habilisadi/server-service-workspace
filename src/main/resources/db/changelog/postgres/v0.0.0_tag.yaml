@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: v1.0.0_add_tag
+      author: system
+      changes:
+        - tagDatabase:
+            tag: v1.0.0
