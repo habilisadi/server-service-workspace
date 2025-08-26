@@ -9,7 +9,7 @@ class InvitationRequest {
         @field:NotNull(message = "email must not be null")
         @field:NotBlank(message = "email must not be blank")
         @field:Email(message = "email must be valid")
-        val email: String,
+        val email: List<String>,
 
         @field:NotNull(message = "email must not be null")
         @field:NotBlank(message = "email must not be blank")

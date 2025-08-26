@@ -7,42 +7,68 @@ import java.time.temporal.ChronoUnit
 
 class InvitationCommand {
     data class Sending(
-        val email: String,
+        val emails: List<String>,
         val workspacePk: String
     ) {
-        fun toEntity(workspaceName: String) = Invitation(
-            email = email,
-            workspacePk = workspacePk,
-            workspaceName = workspaceName,
-            expiredAt = Instant.now().plus(15, ChronoUnit.DAYS)
-        )
+        fun toEntities(workspaceName: String) =
+            emails.map { email ->
+                Invitation(
+                    email = email,
+                    workspacePk = workspacePk,
+                    workspaceName = workspaceName,
+                    expiredAt = Instant.now().plus(15, ChronoUnit.DAYS)
+                )
+            }
     }
 
     data class Pending(
-        val email: String,
+        val invitationUsers: List<InvitationUser>,
         val workspacePk: String,
         val workspaceName: String,
-        val invitationCode: InvitationCode,
         val expiredAt: Instant
     ) {
+
+        data class InvitationUser(
+            val email: String,
+            val invitationCode: InvitationCode
+        )
+
         companion object {
-            fun fromInvitation(invitation: Invitation) = Pending(
-                email = invitation.email,
-                workspacePk = invitation.workspacePk,
-                workspaceName = invitation.workspaceName,
-                invitationCode = invitation.code,
-                expiredAt = invitation.expiredAt
-            )
+            fun fromInvitation(invitations: List<Invitation>): Pending {
+                val invitationUsers = invitations.map { invitation ->
+                    InvitationUser(invitation.email, invitation.code)
+                }
+
+                return Pending(
+                    invitationUsers = invitationUsers,
+                    workspacePk = invitations[0].workspacePk,
+                    workspaceName = invitations[0].workspaceName,
+                    expiredAt = invitations[0].expiredAt
+                )
+            }
+
         }
 
-        fun toGrpcRequest() =
-            com.habilisadi.workspace.InvitationRequest.newBuilder()
-                .setEmail(email)
+        fun toGrpcRequest(): com.habilisadi.workspace.InvitationRequest {
+            val invitationUsers = invitationUsers.map { invitationUser ->
+                com.habilisadi.workspace.InvitationUser.newBuilder()
+                    .setEmail(invitationUser.email)
+                    .setInvitationCode(invitationUser.invitationCode.value)
+                    .build()
+            }
+
+            val invitationRequestBuilder = com.habilisadi.workspace.InvitationRequest.newBuilder()
+
+            invitationRequestBuilder.invitationUserList.addAll(invitationUsers)
+
+            return invitationRequestBuilder
                 .setWorkspacePk(workspacePk)
                 .setWorkspaceName(workspaceName)
-                .setInvitationCode(invitationCode.value)
                 .setExpiredAt(expiredAt.toString())
                 .build()
+        }
+
+
     }
 
     data class VerifyCode(

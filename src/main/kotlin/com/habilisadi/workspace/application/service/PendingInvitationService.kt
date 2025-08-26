@@ -18,12 +18,21 @@ class PendingInvitationService(
         val workspaceEntity = workspaceRepository.findById(command.workspacePk)
             .orElseThrow { throw IllegalArgumentException("Workspace not found") }
 
-        val invitationEntity = command.toEntity(workspaceEntity.name)
-        val key =
-            redisInvitationKeyProps.generateInvitationKey(invitationEntity.workspacePk, invitationEntity.code.value)
+        val invitationEntities = command.toEntities(workspaceEntity.name)
+        val keyAndInvitation = invitationEntities.map { invitationEntity ->
+            Pair(
+                redisInvitationKeyProps.generateInvitationKey(
+                    invitationEntity.workspacePk,
+                    invitationEntity.code.value
+                ), invitationEntity
+            )
+        }
 
-        invitationRedisRepository.saveValue(key, invitationEntity)
+        keyAndInvitation.forEach { (key, invitationEntity) ->
+            invitationRedisRepository.saveValue(key, invitationEntity)
+        }
 
-        return InvitationCommand.Pending.fromInvitation(invitationEntity)
+
+        return InvitationCommand.Pending.fromInvitation(invitationEntities)
     }
 }

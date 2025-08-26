@@ -21,13 +21,16 @@ message LeaveWorkspaceResponse {
 }
 
 message InvitationRequest {
-  string id = 1;
-  string email = 2;
-  string workspacePk = 3;
-  string workspaceName = 4;
-  string invitationCode = 5;
-  Status status = 7;
-  string expiredAt = 6;
+  string workspacePk = 1;
+  string workspaceName = 2;
+  repeated InvitationUser invitationUser = 3;
+  Status status = 4;
+  string expiredAt = 5;
+}
+
+message InvitationUser {
+  string email = 1;
+  string invitationCode = 2;
 }
 
 message InvitationResponse {
